@@ -10,6 +10,8 @@
  * @return int Exit status.
  */
 
+static int socketfd;
+
 int main(int argc, char** argv) {
     struct sockaddr_in servaddr;
     char sendline[MAXLINE + 1];
