@@ -1,4 +1,6 @@
 #include "client.h"
+#include <sys/time.h>
+#include <poll.h>
 
 /**
  * @brief Main function for the client.
@@ -22,24 +24,27 @@ int main(int argc, char** argv) {
         handle_err("signal");
     }
 
-    // Create a socket
     if ((socketfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         handle_err("Socket creation error");
     }
-    // Initialize server address structure
+
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_port = htons(SERVER_PORT);
     servaddr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 
-    // Connect to the server
     if (connect(socketfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0) {
         handle_err("connect failed");
     }
+    
 
-    // Main loop for sending and receiving messages
+    int bytes_received;
+    struct pollfd pfd;
+    pfd.fd = socketfd;
+    pfd.events = POLLIN | POLLHUP | POLLERR; // Poll the events on socket to check connection status
+
     while (true) {
-        // Get message from user 
+
         memset(sendline, 0, sizeof(sendline));
         fprintf(stdout, "Enter message (%d char at max), Ctrl+C to quit: ", MAXLINE);
         fflush(stdout);
@@ -58,40 +63,55 @@ int main(int argc, char** argv) {
         }
         fflush(stdout);
 
-        // Get size of the message
-        int size = strlen(sendline);
-        fprintf(stdout, "Header value: %d ", size);
-        fflush(stdout);
-
-        // Validate message size
+        int size = strlen(sendline) + 1;
         if (HEADER_SIZE != sizeof(size) || size <= 0) {
             fprintf(stdout, "invalid header or message size\r\n");
             continue;
         }
+        fprintf(stdout, "Sent data of size: %d, ", size);
+        fflush(stdout);
 
-        // Convert message size to network byte order
         int size_network = htonl(size);
-
-        // Send message size to the server
         if (send(socketfd, &size_network, HEADER_SIZE, MSG_NOSIGNAL) < 0) {
             handle_err("send error");
         }
-
-        // Send the message to the server
         if (send(socketfd, sendline, size, MSG_NOSIGNAL) < 0) {
             handle_err("send error");
-        }       
+        }  
 
-        // Receive response from the server
+
         int recv_size_network = 0;
-        recv(socketfd, &recv_size_network, HEADER_SIZE, 0);
+        if((bytes_received = recv(socketfd, &recv_size_network, HEADER_SIZE, 0)) <= 0){
+        if (bytes_received == 0) {
+                fprintf(stdout, "Server closed the connection\r\n");
+            } else if (bytes_received < 0) {
+                handle_err("recv failed");
+            }
+            fflush(stdout);
+            break;
+        } 
         int recv_size = ntohl(recv_size_network);
-
-        // Receive the echoed message from the server
         memset(recvline, 0, MAXLINE);
-        recv(socketfd, recvline, recv_size, 0);
+        if((bytes_received = recv(socketfd, recvline, recv_size, 0)) <= 0){
+        if (bytes_received == 0) {
+                fprintf(stdout, "Server closed the connection\r\n");
+            } else if (bytes_received < 0) {
+                handle_err("recv failed");
+            }
+            fflush(stdout);
+            break;
+        } 
+        fprintf(stdout, "Received size: %d, ", recv_size);
         fprintf(stdout, "server echo: %s\r\n", recvline);
         fflush(stdout);
+
+        int poll_result = poll(&pfd, 1, 1000);
+        if (poll_result < 0) {
+            handle_err("poll error");
+        } else if (pfd.revents & (POLLHUP | POLLERR)) {
+                fprintf(stdout, "Connection closed by server\r\n");
+                break;
+        }
     }
     fflush(stdout);
 
