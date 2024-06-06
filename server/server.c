@@ -71,7 +71,7 @@ int main() {
                 close(connfd);
                 break;
             }
-            fprintf(stdout, "Header value: %d ", size);
+            fprintf(stdout, "Header value: %d ", size-1);
 
             if ((bytes_received = recv(connfd, buffer, size, 0)) <= 0) {
                 if (bytes_received == 0) {
