@@ -64,7 +64,7 @@ int main() {
             fprintf(stdout, "invalid header or message size\r\n");
             continue;
         }
-        fprintf(stdout, "Sent data of size: %d, ", size);
+        fprintf(stdout, "Sent data of size: %d, ", size-1);
         fflush(stdout);
 
         int size_network = htonl(size);
@@ -97,7 +97,7 @@ int main() {
             fflush(stdout);
             break;
         } 
-        fprintf(stdout, "Received size: %d, ", recv_size);
+        fprintf(stdout, "Received size: %d, ", recv_size-1);
         fprintf(stdout, "server echo: %s\r\n", recvline);
         fflush(stdout);
 
