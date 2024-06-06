@@ -8,9 +8,9 @@ This example code was written to demonstrate basic socket programming concepts i
 
 ## Features
 
-- **Client**: Connects to the server, sends a message, and receives the same message back.
+- **Client**: Connects to the server, sends a message, and receives the same message back,`MAX MESSAGE SIZE is 4096 Bytes`.
 - **Server**: Accepts a connection from the client, receives a message, and sends the same message back.
-- **Error Handling**: Basic error handling is implemented for system calls.
+- **Error Handling**: Basic error handling is implemented for system calls and message size.
 - **Signal Handling**: Handles `SIGINT` (Ctrl+C) to gracefully shut down the client and server.
 
 ## Building and Running

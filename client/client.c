@@ -4,17 +4,13 @@
 
 /**
  * @brief Main function for the client.
- *
  * This function establishes a connection to the server, sends a message, and receives the same message back.
- * 
- * @param argc Argument count.
- * @param argv Argument vector.
  * @return int Exit status.
  */
 
 static int socketfd;
 
-int main(int argc, char** argv) {
+int main() {
     struct sockaddr_in servaddr;
     char sendline[MAXLINE + 1];
     char recvline[MAXLINE + 1];

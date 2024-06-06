@@ -2,9 +2,7 @@
 
 /**
  * @brief Main function for the server.
- *
  * This function sets up a server that listens for a client connection, receives a message, and sends the same message back.
- * 
  * @return int Exit status.
  */
 
